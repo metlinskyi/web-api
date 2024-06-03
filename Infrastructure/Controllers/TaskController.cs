@@ -39,7 +39,7 @@ public abstract class TaskController<TIn, TOut> : ControllerBase
         switch(task.Status){
             case Tasks.TaskStatus.Enqueued:
             case Tasks.TaskStatus.Process:
-                return StatusCode(102);  
+                return StatusCode(201);  
             case Tasks.TaskStatus.Completed:
                 return GetTaskResult(task);
             case Tasks.TaskStatus.Faulted:

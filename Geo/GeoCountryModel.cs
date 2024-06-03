@@ -1,5 +1,5 @@
 namespace abd.Geo;
 
-public class GeoCountryModel {
+public class GeoCountryModel : GeoModel {
     
 }
