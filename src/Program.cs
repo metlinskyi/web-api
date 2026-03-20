@@ -1,20 +1,14 @@
-using Api.Services;
-using Api.Services.Bot;
+using System.Text;
+using Api.Application;
+using Api.Middleware.Handlers;
 using Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 // Create the native AOT application builder
 var builder = WebApplication.CreateSlimBuilder(args);
 var config = builder.Configuration;
-
-
-#region Builder Configuration
-
-// Configure JSON options
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-});
 
 // Add database context
 builder.Services.AddDb(_ => 
@@ -22,55 +16,62 @@ builder.Services.AddDb(_ =>
     _.UseNpgsql(config.GetConnectionString("DefaultConnection")!);
 }); 
 
-// Add MediatR
-builder.Services.AddMediatR(_ => 
-{
-    _.LicenseKey = config["LuckyPennySoftware:LicenseKey"];
-    _.RegisterServicesFromAssemblyContaining<Program>();
-});
 
-// Map AutoMapper profiles
-builder.Services.AddAutoMapper(_ => 
+builder.Services.AddScoped<IData, ApiData>();
+builder.Services.AddSingleton<ISecurityConfig, SecurityConfig>();
+builder.Services.AddHappyEndpoins(_ =>
 {
-    _.LicenseKey = config["LuckyPennySoftware:LicenseKey"];
-    _.AddMaps(typeof(Program).Assembly);    
-});
-
-// Configure endpoint mapping`
-builder.Services.AddEndpointMapping(_ => 
-{
-    _.UrlPattern = "/api/{namespace}/{type}/{method}";
-    _.AddPattern(type => type.Namespace?.Replace(".", "/"), "namespace", "Api/Services/(?<namespace>.*)");
-    _.AddPattern(type => type.Name, "type", "I(?<type>.*)Service");
-    _.AddPattern(type => type.Name, "type", "(?<type>.*)Request");  
+    _.Add<HappyEndpoint>();
 });
 
 // Add authentication and authorization
-builder.Services.AddAuthentication().AddJwtBearer();
+var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]!);
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
+
 builder.Services.AddAuthorization();
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MediatorPolicy",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
 
 // Add gRPC services
 builder.Services.AddGrpc();
 if (builder.Environment.IsDevelopment())
     builder.Services.AddGrpcReflection();
 
-builder.Services.AddTransient<IBotService, BotService>();
-
-#endregion
-
-
 // Build the application
 var app = builder.Build();
 
-#region App Configuration
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
-app.MapServices();
+app.UseCors("MediatorPolicy");
+app.MapMediator(app.MapGroup("/api/").RequireCors("MediatorPolicy"));
+
+app.MapGrpcServices();
 if (app.Environment.IsDevelopment())
     app.MapGrpcReflectionService();
-
-#endregion
-
 
 /// Start the application
 app.Run();

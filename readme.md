@@ -2,8 +2,23 @@
 
 The hybrid REST/gRPC application
 
-### Running
+### Build
+```bash
+dotnet restore -s ../packages 
+dotnet build src/api.csproj -c Release
+```
 
+### Running
+dotnet ./src/bin/Release/net9.0/api
+```bash
+rm -rf app/* && dotnet publish src/api.csproj -c Release -o app/ \
+    --runtime linux-x64 \
+    --self-contained true \
+    /p:PublishAot=true \
+    /p:PublishTrimmed=true \
+    /p:PublishSingleFile=true \
+    /p:EnableCompressionInSingleFile=true 
+```
 ```bash
 dotnet run -p src/api.csproj
 ```
@@ -13,6 +28,17 @@ dotnet run -p src/api.csproj
 ```bash
 dotnet test
 ```
+protoc -I=/home/int/www.metlinskyi.com/api/src/Application MediatorService.proto --js_out=import_style=commonjs:/home/int/www.metlinskyi.com/api/src/
+
+find . -type f -name '*.proto' -print0 | xargs -0 realpath | echo > $f
+
+
+find . -name '*.proto' > $f | echo "$f"
+
+find . -name '*.proto' -exec protoc -I=file --js_out=import_style=commonjs:. {} \;
+export = DRI
+
+find . -type f  -name '*.proto' -exec protoc -I=file --js_out=import_style=commonjs:. {} \;
 
 &nbsp;
 ============

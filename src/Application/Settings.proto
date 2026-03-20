@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "Api.Application";
+
+package settings;
+
+// The application service definition.
+service Settings {
+  // Gets the application settings
+  rpc Get (google.protobuf.Empty) returns (Dictionary);
+}
+
+message DictionaryItem {
+  string key = 1;
+  string value = 2;
+}
+
+message Dictionary {
+  repeated DictionaryItem items = 1;
+}
