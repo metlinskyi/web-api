@@ -14,12 +14,6 @@ var connectionString = config.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(connectionString)); 
 
-builder.Services.AddSingleton<ISecurityConfig, SecurityConfig>();
-builder.Services.AddHappyEndpoins(_ =>
-{
-    
-});
-
 // Add authentication and authorization
 var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]!);
 builder.Services
@@ -63,9 +57,7 @@ app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 app.UseCors("MediatorPolicy");
-app.MapMediator(app.MapGroup("/api/").RequireCors("MediatorPolicy"));
 
-app.MapGrpcServices();
 if (app.Environment.IsDevelopment())
     app.MapGrpcReflectionService();
 
