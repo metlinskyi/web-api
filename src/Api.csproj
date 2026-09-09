@@ -6,21 +6,27 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Api</RootNamespace>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
 
   <ItemGroup>
-    <Protobuf Include="Application\Settings.proto" GrpcServices="Server" />
+    <!--<Protobuf Include="Application\Settings.proto" GrpcServices="Server" />-->
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Data" Version="0.0.2" />
+    <PackageReference Include="Data.Entities" Version="1.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.76.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.64.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.12" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    <PackageReference Include="Polly" Version="8.6.5" />
   </ItemGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath Condition="'$(OutputPath)'=='' ">..\..\bin\Debug\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath Condition="'$(OutputPath)'=='' ">..\..\bin\Release\</OutputPath>
+  </PropertyGroup>
 
 </Project>

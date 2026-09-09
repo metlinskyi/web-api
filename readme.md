@@ -1,6 +1,8 @@
 ## API
 
 The hybrid REST/gRPC application
+dotnet nuget add source "$PWD/../packages" --name local
+dotnet add src/Api.csproj package Data.Entities --version 1.0.1 --source "$PWD/../packages" 
 
 ### Build
 ```bash

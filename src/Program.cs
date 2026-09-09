@@ -1,7 +1,5 @@
 using System.Text;
-using Api.Application;
-using Api.Middleware.Handlers;
-using Data;
+using Data.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,17 +9,15 @@ var builder = WebApplication.CreateSlimBuilder(args);
 var config = builder.Configuration;
 
 // Add database context
-builder.Services.AddDb(_ => 
-{
-    _.UseNpgsql(config.GetConnectionString("DefaultConnection")!);
-}); 
+var connectionString = config.GetConnectionString("DefaultConnection");
 
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseNpgsql(connectionString)); 
 
-builder.Services.AddScoped<IData, ApiData>();
 builder.Services.AddSingleton<ISecurityConfig, SecurityConfig>();
 builder.Services.AddHappyEndpoins(_ =>
 {
-    _.Add<HappyEndpoint>();
+    
 });
 
 // Add authentication and authorization
